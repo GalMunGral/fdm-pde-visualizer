@@ -1,13 +1,18 @@
 (() => {
   // src/utils.ts
+  function makeGrid(m2, n2, fn) {
+    return Array(m2).fill(0).map(
+      (_, i) => Array(n2).fill(0).map((_2, j) => fn(i, j))
+    );
+  }
   function zeros(m2, n2) {
-    return Array(m2).fill(0).map(() => Array(n2).fill(0));
+    return makeGrid(m2, n2, () => 0);
   }
   function sinusoid2D(m2, n2, k) {
-    return Array(m2).fill(0).map(
-      (_, i) => Array(n2).fill(0).map(
-        (_2, j) => Math.sin(k * Math.sqrt((i - m2 / 2) ** 2 + (j - n2 / 2) ** 2))
-      )
+    return makeGrid(
+      m2,
+      n2,
+      (i, j) => Math.sin(k * Math.sqrt((j - n2 / 2) ** 2 + (i - m2 / 2) ** 2))
     );
   }
   function clamp(v, min, max) {
@@ -15,7 +20,7 @@
   }
 
   // src/FDM.ts
-  function FiniteDifference(U, V, dudt, dvdt, h, dt) {
+  function FDM(U, V, dudt, dvdt, h, dt) {
     const m2 = U.length;
     const n2 = U[0].length;
     const u = (i, j) => U[(i + m2) % m2][(j + n2) % n2];
@@ -24,9 +29,9 @@
     const dudy = (i, j) => (u(i + 1, j) - u(i - 1, j)) / (2 * h);
     const d2udx2 = (i, j) => (u(i, j - 1) - 2 * u(i, j) + u(i, j + 1)) / h ** 2;
     const d2udy2 = (i, j) => (u(i - 1, j) - 2 * u(i, j) + u(i + 1, j)) / h ** 2;
-    function step(iterations) {
+    function step(iters) {
       let dMax = -Infinity;
-      while (iterations--) {
+      while (iters--) {
         let U$ = zeros(m2, n2);
         let V$ = zeros(m2, n2);
         for (let i = 0; i < m2; ++i) {
@@ -66,20 +71,20 @@
 
   // src/index.ts
   var ctx = document.querySelector("canvas")?.getContext("2d");
-  var n = ctx.canvas.width;
   var m = ctx.canvas.height;
+  var n = ctx.canvas.width;
   var imageData = new ImageData(n, m);
-  var Solution = FiniteDifference(
+  var Sol = FDM(
     sinusoid2D(m, n, 0.5),
     zeros(m, n),
     (i, j, { v }) => v(i, j),
-    (i, j, { d2udx2, d2udy2 }) => 100 * (d2udx2(i, j) + d2udy2(i, j)),
+    (i, j, { d2udx2, d2udy2 }) => 50 * (d2udx2(i, j) + d2udy2(i, j)),
     1,
     1e-4
   );
   requestAnimationFrame(function render() {
-    Solution.step(100);
-    Solution.transfer(imageData.data, -1, 1);
+    Sol.step(100);
+    Sol.transfer(imageData.data, -1, 1);
     ctx.putImageData(imageData, 0, 0);
     requestAnimationFrame(render);
   });

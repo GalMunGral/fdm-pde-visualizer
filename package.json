@@ -3,6 +3,7 @@
     "dev": "esbuild ./src/index.ts --outdir=docs --bundle --watch"
   },
   "devDependencies": {
-    "esbuild": "^0.18.17"
+    "esbuild": "^0.18.17",
+    "typescript": "^5.1.6"
   }
 }
