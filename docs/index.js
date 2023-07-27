@@ -81,8 +81,8 @@
   var width = ctx.canvas.width;
   var imageData = new ImageData(width, height);
   var Sol = FDM(
-    sinusoid2D(100, 100, 1),
-    zeros(100, 100),
+    sinusoid2D(50, 50, 1),
+    zeros(50, 50),
     (i, j, { v }) => v(i, j),
     (i, j, { d2udx2, d2udy2 }) => 50 * (d2udx2(i, j) + d2udy2(i, j)),
     1,
