@@ -14,7 +14,7 @@
     return Math.max(min, Math.min(max, v));
   }
 
-  // src/FEM.ts
+  // src/FDM.ts
   function FiniteDifference(U, V, dudt, dvdt, h, dt) {
     const m2 = U.length;
     const n2 = U[0].length;

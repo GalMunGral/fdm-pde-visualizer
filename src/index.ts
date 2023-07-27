@@ -1,5 +1,5 @@
 import { random, sinusoid2D, zeros } from "./utils.js";
-import { FiniteDifference } from "./FEM.js";
+import { FiniteDifference } from "./FDM.js";
 
 const ctx = document.querySelector("canvas")?.getContext("2d")!;
 const n = ctx.canvas.width;
