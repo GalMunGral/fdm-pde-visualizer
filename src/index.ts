@@ -2,13 +2,13 @@ import { sinusoid2D, zeros } from "./utils";
 import { FDM } from "./FDM";
 
 const ctx = document.querySelector("canvas")?.getContext("2d")!;
-const m = ctx.canvas.height;
-const n = ctx.canvas.width;
-const imageData = new ImageData(n, m);
+const height = ctx.canvas.height;
+const width = ctx.canvas.width;
+const imageData = new ImageData(width, height);
 
 const Sol = FDM(
-  sinusoid2D(m, n, 0.5),
-  zeros(m, n),
+  sinusoid2D(100, 100, 1),
+  zeros(100, 100),
   (i, j, { v }) => v(i, j),
   (i, j, { d2udx2, d2udy2 }) => 50 * (d2udx2(i, j) + d2udy2(i, j)),
   1,
@@ -17,7 +17,7 @@ const Sol = FDM(
 
 requestAnimationFrame(function render() {
   Sol.step(100);
-  Sol.transfer(imageData.data, -1, 1);
+  Sol.transfer(imageData, -1, 1);
   ctx.putImageData(imageData, 0, 0);
   requestAnimationFrame(render);
 });

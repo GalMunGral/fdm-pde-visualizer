@@ -26,7 +26,7 @@ export function FDM(
     (u(i - 1, j) - 2 * u(i, j) + u(i + 1, j)) / h ** 2;
 
   function step(iters: Int): void {
-    let dMax = -Infinity;
+    // let dMax = -Infinity;
     while (iters--) {
       let U$ = zeros(m, n);
       let V$ = zeros(m, n);
@@ -35,7 +35,7 @@ export function FDM(
           const du = dt * dudt(i, j, { u, v, dudx, dudy, d2udx2, d2udy2 });
           const dv = dt * dvdt(i, j, { u, v, dudx, dudy, d2udx2, d2udy2 });
           if (isNaN(du) || isNaN(dv)) throw new Error("NaN");
-          dMax = Math.max(dMax, Math.abs(du), Math.abs(dv));
+          // dMax = Math.max(dMax, Math.abs(du), Math.abs(dv));
           U$[i][j] = U[i][j] + du;
           V$[i][j] = V[i][j] + dv;
         }
@@ -43,23 +43,36 @@ export function FDM(
       U = U$;
       V = V$;
     }
-    console.debug(dMax);
+    // console.debug(dMax);
   }
 
-  function transfer(
-    imageData: Uint8ClampedArray,
-    min: Float,
-    max: Float
-  ): void {
-    for (let i = 0; i < m; ++i) {
-      for (let j = 0; j < n; ++j) {
-        const base = (m - 1 - i) * n + j;
-        const t = (U[i][j] - min) / (max - min);
-        const I = 255 * clamp(t, 0, 1);
-        imageData[base * 4] = I;
-        imageData[base * 4 + 1] = I;
-        imageData[base * 4 + 2] = I;
-        imageData[base * 4 + 3] = 255;
+  function transfer(imageData: ImageData, min: Float, max: Float): void {
+    const { width, height, data } = imageData;
+    for (let i = 0; i < height; ++i) {
+      for (let j = 0; j < width; ++j) {
+        const x = (n / width) * j;
+        const y = (m / height) * i;
+        const x1 = Math.floor(x);
+        const x2 = x1 + 1;
+        const y1 = Math.floor(y);
+        const y2 = y1 + 1;
+        const tx = (x - x1) / (x2 - x1);
+        const ty = (y - y1) / (y2 - y1);
+
+        const v =
+          x == x1 || y == y1
+            ? 0
+            : u(x1, y1) * (1 - tx) * (1 - ty) +
+              u(x1, y2) * (1 - tx) * ty +
+              u(x2, y1) * tx * (1 - ty) +
+              u(x2, y2) * tx * ty;
+
+        const I = 255 * clamp((v - min) / (max - min), 0, 1);
+        const base = (height - 1 - i) * width + j;
+        data[base * 4] = I;
+        data[base * 4 + 1] = I;
+        data[base * 4 + 2] = I;
+        data[base * 4 + 3] = 255;
       }
     }
   }
