@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "dev": "esbuild ./src/index.ts --outdir=docs --bundle --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.18.17"
+  }
+}
