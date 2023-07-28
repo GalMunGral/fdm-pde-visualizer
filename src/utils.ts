@@ -1,4 +1,4 @@
-function makeGrid(m: Int, n: Int, fn: (i: Int, j: Int) => Float): Grid {
+export function makeGrid(m: Int, n: Int, fn: (i: Int, j: Int) => Float): Grid {
   return Array(m)
     .fill(0)
     .map((_, i) =>
