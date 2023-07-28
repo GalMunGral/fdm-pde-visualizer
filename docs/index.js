@@ -105,6 +105,6 @@
       ctx.putImageData(imageData, 0, 0);
       rafHandle = requestAnimationFrame(render);
     });
-    setTimeout(reset, 1e4);
+    setTimeout(reset, 5e3);
   })();
 })();

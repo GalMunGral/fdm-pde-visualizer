@@ -50,5 +50,5 @@ let rafHandle = -1;
     rafHandle = requestAnimationFrame(render);
   });
 
-  setTimeout(reset, 10000);
+  setTimeout(reset, 5000);
 })();
