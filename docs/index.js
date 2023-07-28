@@ -52,7 +52,7 @@
           const y2 = y1 + 1;
           const tx = (x - x1) / (x2 - x1);
           const ty = (y - y1) / (y2 - y1);
-          const v2 = x == x1 || y == y1 ? 0 : u(x1, y1) * (1 - tx) * (1 - ty) + u(x1, y2) * (1 - tx) * ty + u(x2, y1) * tx * (1 - ty) + u(x2, y2) * tx * ty;
+          const v2 = u(x1, y1) * (1 - tx) * (1 - ty) + u(x1, y2) * (1 - tx) * ty + u(x2, y1) * tx * (1 - ty) + u(x2, y2) * tx * ty;
           const I = 255 * clamp((v2 - min) / (max - min), 0, 1);
           const base = (height2 - 1 - i) * width2 + j;
           data[base * 4] = I;
@@ -73,26 +73,30 @@
   var height = ctx.canvas.height;
   var width = ctx.canvas.width;
   var imageData = new ImageData(width, height);
-  function gaussians(points) {
+  var N = 50;
+  function initialValue() {
+    const gaussians = [];
+    let n = 20;
+    while (n--) {
+      gaussians.push([
+        Math.random() * N,
+        Math.random() * N,
+        Math.random() * 0.5 + 0.1
+      ]);
+    }
     return (i, j) => {
       let u = 0;
-      for (const [ci, cj] of points) {
-        u += Math.exp(-0.1 * ((i - ci) ** 2 + (j - cj) ** 2));
+      for (const [ci, cj, k] of gaussians) {
+        u += Math.exp(-k * ((i - ci) ** 2 + (j - cj) ** 2));
       }
-      return 2 * u - 1;
+      return u;
     };
   }
   var rafHandle = -1;
   (function reset() {
     cancelAnimationFrame(rafHandle);
-    const N = 50;
-    const initialValue = gaussians(
-      Array(20).fill(0).map(
-        () => Array(2).fill(0).map(() => Math.random() * N)
-      )
-    );
     const Sol = FDM(
-      makeGrid(N, N, initialValue),
+      makeGrid(N, N, initialValue()),
       zeros(50, 50),
       (i, j, { v }) => v(i, j),
       (i, j, { d2udx2, d2udy2 }) => 100 * (d2udx2(i, j) + d2udy2(i, j)),
@@ -101,10 +105,10 @@
     );
     rafHandle = requestAnimationFrame(function render() {
       Sol.step(100);
-      Sol.transfer(imageData, -1, 1);
+      Sol.transfer(imageData, 0, 1);
       ctx.putImageData(imageData, 0, 0);
       rafHandle = requestAnimationFrame(render);
     });
-    setTimeout(reset, 5e3);
+    setTimeout(reset, 3e3);
   })();
 })();

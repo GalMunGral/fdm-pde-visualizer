@@ -6,13 +6,24 @@ const height = ctx.canvas.height;
 const width = ctx.canvas.width;
 const imageData = new ImageData(width, height);
 
-function gaussians(points: Array<[Int, Int]>): Fn {
+const N = 50;
+
+function initialValue(): Fn {
+  const gaussians: Array<[Float, Float, Float]> = [];
+  let n = 20;
+  while (n--) {
+    gaussians.push([
+      Math.random() * N,
+      Math.random() * N,
+      Math.random() * 0.5 + 0.1,
+    ]);
+  }
   return (i, j) => {
     let u = 0;
-    for (const [ci, cj] of points) {
-      u += Math.exp(-0.1 * ((i - ci) ** 2 + (j - cj) ** 2));
+    for (const [ci, cj, k] of gaussians) {
+      u += Math.exp(-k * ((i - ci) ** 2 + (j - cj) ** 2));
     }
-    return 2 * u - 1;
+    return u;
   };
 }
 
@@ -21,21 +32,8 @@ let rafHandle = -1;
 (function reset() {
   cancelAnimationFrame(rafHandle);
 
-  const N = 50;
-
-  const initialValue = gaussians(
-    Array(20)
-      .fill(0)
-      .map(
-        () =>
-          Array(2)
-            .fill(0)
-            .map(() => Math.random() * N) as [Int, Int]
-      )
-  );
-
   const Sol = FDM(
-    makeGrid(N, N, initialValue),
+    makeGrid(N, N, initialValue()),
     zeros(50, 50),
     (i, j, { v }) => v(i, j),
     (i, j, { d2udx2, d2udy2 }) => 100 * (d2udx2(i, j) + d2udy2(i, j)),
@@ -45,10 +43,10 @@ let rafHandle = -1;
 
   rafHandle = requestAnimationFrame(function render() {
     Sol.step(100);
-    Sol.transfer(imageData, -1, 1);
+    Sol.transfer(imageData, 0, 1);
     ctx.putImageData(imageData, 0, 0);
     rafHandle = requestAnimationFrame(render);
   });
 
-  setTimeout(reset, 5000);
+  setTimeout(reset, 3000);
 })();

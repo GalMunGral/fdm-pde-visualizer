@@ -59,12 +59,10 @@ export function FDM(
         const ty = (y - y1) / (y2 - y1);
 
         const v =
-          x == x1 || y == y1
-            ? 0
-            : u(x1, y1) * (1 - tx) * (1 - ty) +
-              u(x1, y2) * (1 - tx) * ty +
-              u(x2, y1) * tx * (1 - ty) +
-              u(x2, y2) * tx * ty;
+          u(x1, y1) * (1 - tx) * (1 - ty) +
+          u(x1, y2) * (1 - tx) * ty +
+          u(x2, y1) * tx * (1 - ty) +
+          u(x2, y2) * tx * ty;
 
         const I = 255 * clamp((v - min) / (max - min), 0, 1);
         const base = (height - 1 - i) * width + j;
