@@ -1,9 +1,5 @@
 import { clamp, zeros } from "./utils";
 
-type HelperKeys = "u" | "v" | "dudx" | "dudy" | "d2udx2" | "d2udy2";
-type Helper = Record<HelperKeys, Fn>;
-type UserFn = (i: Int, j: Int, helper: Helper) => Float;
-
 export function FDM(
   U: Grid,
   V: Grid,
@@ -51,18 +47,18 @@ export function FDM(
       for (let j = 0; j < width; ++j) {
         const x = (n / width) * j;
         const y = (m / height) * i;
-        const x1 = Math.floor(x);
-        const x2 = x1 + 1;
-        const y1 = Math.floor(y);
-        const y2 = y1 + 1;
-        const tx = (x - x1) / (x2 - x1);
-        const ty = (y - y1) / (y2 - y1);
+        const j1 = Math.floor(x);
+        const j2 = j1 + 1;
+        const i1 = Math.floor(y);
+        const i2 = i1 + 1;
+        const tx = (x - j1) / (j2 - j1);
+        const ty = (y - i1) / (i2 - i1);
 
         const v =
-          u(x1, y1) * (1 - tx) * (1 - ty) +
-          u(x1, y2) * (1 - tx) * ty +
-          u(x2, y1) * tx * (1 - ty) +
-          u(x2, y2) * tx * ty;
+          u(i1, j1) * (1 - tx) * (1 - ty) +
+          u(i1, j2) * tx * (1 - ty) +
+          u(i2, j1) * (1 - tx) * ty +
+          u(i2, j2) * tx * ty;
 
         const I = 255 * clamp((v - min) / (max - min), 0, 1);
         const base = (height - 1 - i) * width + j;

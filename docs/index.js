@@ -40,21 +40,21 @@
         V = V$;
       }
     }
-    function transfer(imageData2, min, max) {
-      const { width: width2, height: height2, data } = imageData2;
-      for (let i = 0; i < height2; ++i) {
-        for (let j = 0; j < width2; ++j) {
-          const x = n / width2 * j;
-          const y = m / height2 * i;
-          const x1 = Math.floor(x);
-          const x2 = x1 + 1;
-          const y1 = Math.floor(y);
-          const y2 = y1 + 1;
-          const tx = (x - x1) / (x2 - x1);
-          const ty = (y - y1) / (y2 - y1);
-          const v2 = u(x1, y1) * (1 - tx) * (1 - ty) + u(x1, y2) * (1 - tx) * ty + u(x2, y1) * tx * (1 - ty) + u(x2, y2) * tx * ty;
+    function transfer(imageData, min, max) {
+      const { width, height, data } = imageData;
+      for (let i = 0; i < height; ++i) {
+        for (let j = 0; j < width; ++j) {
+          const x = n / width * j;
+          const y = m / height * i;
+          const j1 = Math.floor(x);
+          const j2 = j1 + 1;
+          const i1 = Math.floor(y);
+          const i2 = i1 + 1;
+          const tx = (x - j1) / (j2 - j1);
+          const ty = (y - i1) / (i2 - i1);
+          const v2 = u(i1, j1) * (1 - tx) * (1 - ty) + u(i1, j2) * tx * (1 - ty) + u(i2, j1) * (1 - tx) * ty + u(i2, j2) * tx * ty;
           const I = 255 * clamp((v2 - min) / (max - min), 0, 1);
-          const base = (height2 - 1 - i) * width2 + j;
+          const base = (height - 1 - i) * width + j;
           data[base * 4] = I;
           data[base * 4 + 1] = I;
           data[base * 4 + 2] = I;
@@ -69,11 +69,16 @@
   }
 
   // src/index.ts
-  var ctx = document.querySelector("canvas")?.getContext("2d");
-  var height = ctx.canvas.height;
-  var width = ctx.canvas.width;
-  var imageData = new ImageData(width, height);
   var N = 40;
+  setup(
+    document.querySelector("#advection\u2013diffusion"),
+    (i, j, { dudx, d2udx2, d2udy2 }) => 20 * dudx(i, j) + 20 * (d2udx2(i, j) + d2udy2(i, j))
+  );
+  setup(
+    document.querySelector("#wave"),
+    (i, j, { v }) => v(i, j),
+    (i, j, { d2udx2, d2udy2 }) => 200 * (d2udx2(i, j) + d2udy2(i, j))
+  );
   function initialValue() {
     const gaussians = [];
     let n = 20;
@@ -92,23 +97,29 @@
       return u;
     };
   }
-  var rafHandle = -1;
-  (function reset() {
-    cancelAnimationFrame(rafHandle);
-    const Sol = FDM(
-      makeGrid(N, N, initialValue()),
-      zeros(50, 50),
-      (i, j, { v }) => v(i, j),
-      (i, j, { d2udx2, d2udy2 }) => 200 * (d2udx2(i, j) + d2udy2(i, j)),
-      1,
-      1e-4
-    );
-    rafHandle = requestAnimationFrame(function render() {
-      Sol.step(100);
-      Sol.transfer(imageData, 0, 1);
-      ctx.putImageData(imageData, 0, 0);
-      rafHandle = requestAnimationFrame(render);
-    });
-    setTimeout(reset, 5e3);
-  })();
+  function setup(canvas, dudt, dvdt = () => 0) {
+    const ctx = canvas.getContext("2d");
+    const height = ctx.canvas.height;
+    const width = ctx.canvas.width;
+    const imageData = new ImageData(width, height);
+    let rafHandle = -1;
+    (function reset() {
+      cancelAnimationFrame(rafHandle);
+      const Sol = FDM(
+        makeGrid(N, N, initialValue()),
+        zeros(50, 50),
+        dudt,
+        dvdt,
+        1,
+        1e-4
+      );
+      rafHandle = requestAnimationFrame(function render() {
+        Sol.step(100);
+        Sol.transfer(imageData, 0, 1);
+        ctx.putImageData(imageData, 0, 0);
+        rafHandle = requestAnimationFrame(render);
+      });
+      setTimeout(reset, 3e3);
+    })();
+  }
 })();
