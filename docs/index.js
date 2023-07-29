@@ -73,15 +73,15 @@
   var height = ctx.canvas.height;
   var width = ctx.canvas.width;
   var imageData = new ImageData(width, height);
-  var N = 50;
+  var N = 40;
   function initialValue() {
     const gaussians = [];
     let n = 20;
     while (n--) {
       gaussians.push([
-        Math.random() * N,
-        Math.random() * N,
-        Math.random() * 0.5 + 0.1
+        (Math.random() * 0.8 + 0.1) * N,
+        (Math.random() * 0.8 + 0.1) * N,
+        Math.random() * 0.01 + 0.1
       ]);
     }
     return (i, j) => {
@@ -99,7 +99,7 @@
       makeGrid(N, N, initialValue()),
       zeros(50, 50),
       (i, j, { v }) => v(i, j),
-      (i, j, { d2udx2, d2udy2 }) => 100 * (d2udx2(i, j) + d2udy2(i, j)),
+      (i, j, { d2udx2, d2udy2 }) => 200 * (d2udx2(i, j) + d2udy2(i, j)),
       1,
       1e-4
     );
@@ -109,6 +109,6 @@
       ctx.putImageData(imageData, 0, 0);
       rafHandle = requestAnimationFrame(render);
     });
-    setTimeout(reset, 3e3);
+    setTimeout(reset, 5e3);
   })();
 })();

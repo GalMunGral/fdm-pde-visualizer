@@ -6,16 +6,16 @@ const height = ctx.canvas.height;
 const width = ctx.canvas.width;
 const imageData = new ImageData(width, height);
 
-const N = 50;
+const N = 40;
 
 function initialValue(): Fn {
   const gaussians: Array<[Float, Float, Float]> = [];
   let n = 20;
   while (n--) {
     gaussians.push([
-      Math.random() * N,
-      Math.random() * N,
-      Math.random() * 0.5 + 0.1,
+      (Math.random() * 0.8 + 0.1) * N,
+      (Math.random() * 0.8 + 0.1) * N,
+      Math.random() * 0.01 + 0.1,
     ]);
   }
   return (i, j) => {
@@ -36,7 +36,7 @@ let rafHandle = -1;
     makeGrid(N, N, initialValue()),
     zeros(50, 50),
     (i, j, { v }) => v(i, j),
-    (i, j, { d2udx2, d2udy2 }) => 100 * (d2udx2(i, j) + d2udy2(i, j)),
+    (i, j, { d2udx2, d2udy2 }) => 200 * (d2udx2(i, j) + d2udy2(i, j)),
     1,
     0.0001
   );
@@ -48,5 +48,5 @@ let rafHandle = -1;
     rafHandle = requestAnimationFrame(render);
   });
 
-  setTimeout(reset, 3000);
+  setTimeout(reset, 5000);
 })();
