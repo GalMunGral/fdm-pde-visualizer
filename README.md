@@ -1,3 +1,1 @@
-# FDM-PDE-visualizer
-
-https://galmungral.github.io/FDM-PDE-visualizer/
+https://galmungral.github.io/fdm-pde-visualizer/
